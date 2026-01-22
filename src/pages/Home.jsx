@@ -19,12 +19,12 @@ const Home = () => {
           <div className="blob blob-2"></div>
           <div className="hero-card glass-card">
             <div className="card-stat">
-              <span className="stat-label">Next Period</span>
-              <span className="stat-value">5 Days</span>
+              <span className="stat-label">Every Cycle</span>
+              <span className="stat-value">is a Reset</span>
             </div>
             <div className="card-stat">
-              <span className="stat-label">Cycle Day</span>
-              <span className="stat-value">Day 23</span>
+              <span className="stat-label">Flow gently</span>
+              <span className="stat-value">Rest deeply</span>
             </div>
           </div>
         </div>

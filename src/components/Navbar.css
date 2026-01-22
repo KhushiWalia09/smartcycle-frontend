@@ -81,6 +81,10 @@
     color: white;
 }
 
+.menu-toggle {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .navbar-container {
         padding: 0 1.5rem;
@@ -89,7 +93,10 @@
     .menu-toggle {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        gap: 5px;
         background: none;
         border: none;
         cursor: pointer;
@@ -149,8 +156,4 @@
         text-align: center;
         padding: 1rem;
     }
-}
-
-.menu-toggle {
-    display: none;
 }
