@@ -45,3 +45,14 @@
 .footer-links a:hover {
     color: var(--primary-pink);
 }
+
+@media (max-width: 480px) {
+    .footer-links {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .footer {
+        padding: 2rem 0;
+    }
+}

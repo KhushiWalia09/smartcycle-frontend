@@ -39,6 +39,7 @@
   font-size: 2.5rem;
   background: linear-gradient(135deg, #ff75c3, #ffa647);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 800;
 }
@@ -391,4 +392,90 @@
 .modal-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 25px rgba(255, 117, 195, 0.4);
+}
+
+/* 📱 Responsiveness */
+@media (max-width: 768px) {
+  .dashboard-card {
+    padding: 25px 15px;
+    border-radius: 24px;
+    margin: 20px;
+  }
+
+  .dashboard-card h2 {
+    font-size: 1.8rem;
+  }
+
+  .calendar-section {
+    padding: 15px 10px;
+    border-radius: 18px;
+  }
+
+  .calendar-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-grid-header span {
+    font-size: 0.7rem;
+  }
+
+  .calendar-day {
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .calendar-day.safe-day::after {
+    font-size: 0.5rem;
+    top: -3px;
+    right: -3px;
+  }
+
+  .button-group {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .safe-btn {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+
+  .safe-btn {
+    margin-top: 5px;
+  }
+
+  .history-item {
+    padding: 12px 15px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .calendar-grid {
+    gap: 2px;
+  }
+
+  .calendar-day {
+    font-size: 0.75rem;
+  }
+
+  .modal-content {
+    width: 95%;
+  }
 }

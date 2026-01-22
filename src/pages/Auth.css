@@ -111,3 +111,28 @@ input:focus {
 .toggle-link span:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+        margin: 0 15px;
+    }
+
+    .auth-card h2 {
+        font-size: 1.8rem;
+    }
+
+    .auth-form {
+        gap: 1.2rem;
+    }
+
+    input {
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+
+    .auth-btn {
+        padding: 12px;
+        font-size: 1rem;
+    }
+}
