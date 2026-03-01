@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { db } from "../firebase";
+import { db } from "../../firebase";
 import {
   collection,
   addDoc,
@@ -21,6 +21,11 @@ export default function Dashboard() {
   const [selectedEndDate, setSelectedEndDate] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const [showSafeDays, setShowSafeDays] = useState(false);
+  const [symptoms, setSymptoms] = useState([]);
+  const [isSymptomModalOpen, setIsSymptomModalOpen] = useState(false);
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [selectedMood, setSelectedMood] = useState("");
+  const [notes, setNotes] = useState("");
   
   // 🔹 Custom Modal State
   const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
@@ -43,6 +48,16 @@ export default function Dashboard() {
     setHistory(records);
   };
 
+  const fetchSymptoms = async (uid) => {
+    const q = query(collection(db, "symptoms"), where("uid", "==", uid));
+    const snapshot = await getDocs(q);
+    const records = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setSymptoms(records);
+  };
+
   const deletePeriod = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this record?");
     if (!confirmDelete) return;
@@ -61,6 +76,7 @@ export default function Dashboard() {
       setUser(currentUser);
       if (currentUser) {
         fetchHistory(currentUser.uid);
+        fetchSymptoms(currentUser.uid);
       }
     });
     return () => unsubscribe();
@@ -84,6 +100,33 @@ export default function Dashboard() {
       setSelectedStartDate(null);
       setSelectedEndDate(null);
       fetchHistory(user.uid);
+    } catch (error) {
+      showModal("Oops!", "Something went wrong while saving: " + error.message, "error");
+    }
+  };
+
+  const saveSymptom = async () => {
+    if (!user || !selectedStartDate) {
+      showModal("Wait!", "Please select a date on the calendar first.", "warning");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "symptoms"), {
+        uid: user.uid,
+        date: selectedStartDate.toISOString().split('T')[0],
+        mood: selectedMood,
+        symptoms: selectedSymptoms,
+        notes: notes,
+        createdAt: new Date(),
+      });
+
+      showModal("Saved!", "Your symptoms for today have been logged. 📝");
+      setIsSymptomModalOpen(false);
+      setSelectedSymptoms([]);
+      setSelectedMood("");
+      setNotes("");
+      fetchSymptoms(user.uid);
     } catch (error) {
       showModal("Oops!", "Something went wrong while saving: " + error.message, "error");
     }
@@ -117,6 +160,11 @@ export default function Dashboard() {
       setPrediction(data.next_cycle_length);
 
       // 🔹 Calculate days until next period
+      if (!history || history.length === 0) {
+        showModal("Prediction Ready", `Your next cycle is predicted to be **${data.next_cycle_length} days**.`, "success");
+        return;
+      }
+
       const lastStart = new Date(history[0].startDate);
       const nextDate = new Date(lastStart);
       nextDate.setDate(lastStart.getDate() + data.next_cycle_length);
@@ -163,6 +211,11 @@ export default function Dashboard() {
     return history.some(h => dateStr >= h.startDate && dateStr <= h.endDate);
   };
 
+  const hasSymptom = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return symptoms.some(s => s.date === dateStr);
+  };
+
   const isPredictedDay = (date) => {
     if (!prediction || history.length === 0) return false;
     const lastStart = new Date(history[0].startDate);
@@ -200,6 +253,7 @@ export default function Dashboard() {
       if (isPeriodDay(date)) classes += " period-day";
       if (isPredictedDay(date)) classes += " predicted-day";
       if (isSafeDay(date)) classes += " safe-day";
+      if (hasSymptom(date)) classes += " symptom-day";
       if (date.toDateString() === new Date().toDateString()) classes += " today";
       if (selectedStartDate && date.toDateString() === selectedStartDate.toDateString()) classes += " selected";
       if (selectedEndDate && date.toDateString() === selectedEndDate.toDateString()) classes += " selected";
@@ -259,6 +313,9 @@ export default function Dashboard() {
             <button className="safe-btn" onClick={() => setShowSafeDays(!showSafeDays)}>
               <span>🛡️</span> {showSafeDays ? "Hide Safe Days" : "Show Safe Periods"}
             </button>
+            <button className="symptom-btn" onClick={() => setIsSymptomModalOpen(true)}>
+              <span>📝</span> Log Symptoms
+            </button>
           </div>
 
           <hr className="divider" style={{ margin: '30px 0', opacity: 0.1 }} />
@@ -283,6 +340,18 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <SymptomModal 
+        isOpen={isSymptomModalOpen}
+        onClose={() => setIsSymptomModalOpen(false)}
+        onSave={saveSymptom}
+        selectedSymptoms={selectedSymptoms}
+        setSelectedSymptoms={setSelectedSymptoms}
+        selectedMood={selectedMood}
+        setSelectedMood={setSelectedMood}
+        notes={notes}
+        setNotes={setNotes}
+      />
+
       {/* 🌸 Custom Cute Modal */}
       {modal.isOpen && (
         <div className="modal-overlay" onClick={() => setModal({ ...modal, isOpen: false })}>
@@ -305,3 +374,71 @@ export default function Dashboard() {
     </div>
   );
 }
+
+const SymptomModal = ({ isOpen, onClose, onSave, selectedSymptoms, setSelectedSymptoms, selectedMood, setSelectedMood, notes, setNotes }) => {
+  if (!isOpen) return null;
+
+  const moods = ["Happy", "Sad", "Anxious", "Irritable", "Calm", "Tired"];
+  const allSymptoms = ["Cramps", "Bloating", "Headache", "Acne", "Back Pain", "Breast Tenderness"];
+
+  const toggleSymptom = (s) => {
+    if (selectedSymptoms.includes(s)) {
+      setSelectedSymptoms(selectedSymptoms.filter((item) => item !== s));
+    } else {
+      setSelectedSymptoms([...selectedSymptoms, s]);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content glass-card" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Log Daily Symptoms</h3>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="symptom-section">
+            <p>How are you feeling?</p>
+            <div className="tag-cloud">
+              {moods.map(m => (
+                <button 
+                  key={m} 
+                  className={`tag-btn ${selectedMood === m ? 'active' : ''}`}
+                  onClick={() => setSelectedMood(m)}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="symptom-section">
+            <p>Physical Symptoms</p>
+            <div className="tag-cloud">
+              {allSymptoms.map(s => (
+                <button 
+                  key={s} 
+                  className={`tag-btn ${selectedSymptoms.includes(s) ? 'active' : ''}`}
+                  onClick={() => toggleSymptom(s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="symptom-section">
+            <p>Notes</p>
+            <textarea 
+              className="notes-area" 
+              placeholder="Any other details?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="primary-btn" onClick={onSave}>Save Log ✨</button>
+        </div>
+      </div>
+    </div>
+  );
+};

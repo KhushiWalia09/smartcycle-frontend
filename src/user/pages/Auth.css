@@ -112,6 +112,63 @@ input:focus {
     text-decoration: underline;
 }
 
+/* 🔵 Google & Divider Styles */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.auth-divider span {
+    padding: 0 15px;
+    opacity: 0.6;
+}
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--text-main);
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.google-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.google-btn:hover {
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 117, 195, 0.3);
+}
+
+.google-btn:active {
+    transform: scale(0.98);
+}
+
 @media (max-width: 480px) {
     .auth-card {
         padding: 30px 20px;
