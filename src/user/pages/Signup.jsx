@@ -3,7 +3,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup 
 } from "firebase/auth";
-import { auth } from "../../firebase";
+import { auth, db } from "../../firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Auth.css";
@@ -21,7 +22,17 @@ export default function Signup() {
 
   const signup = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+      
+      // 🔥 Create user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        role: "user", // Default role
+        createdAt: new Date().toISOString()
+      });
+
       navigate("/dashboard");
     } catch (err) {
       showModal("Signup Failed", err.message, "error");
@@ -31,7 +42,17 @@ export default function Signup() {
   // 🔵 Google Login (Signup)
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // 🔥 Ensure user document exists (for Google Login)
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        role: "user",
+        createdAt: new Date().toISOString()
+      }, { merge: true }); // Use merge to avoid overwriting existing role if they already have one
+
       navigate("/dashboard");
     } catch (error) {
       showModal("Oops!", error.message, "error");

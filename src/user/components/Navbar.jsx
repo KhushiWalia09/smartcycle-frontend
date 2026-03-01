@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 import "./Navbar.css";
 
 const Navbar = () => {
@@ -16,8 +18,6 @@ const Navbar = () => {
       setUser(currentUser);
       if (currentUser) {
         try {
-          const { db } = await import("../../firebase");
-          const { doc, getDoc } = await import("firebase/firestore");
           const userDoc = await getDoc(doc(db, "users", currentUser.uid));
           if (userDoc.exists() && userDoc.data().role === "admin") {
             setIsAdmin(true);
@@ -25,7 +25,7 @@ const Navbar = () => {
             setIsAdmin(false);
           }
         } catch (error) {
-          console.error("Error fetching user role:", error);
+          console.error("Error fetching user role in Navbar:", error);
           setIsAdmin(false);
         }
       } else {

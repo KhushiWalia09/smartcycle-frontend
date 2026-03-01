@@ -36,26 +36,36 @@ export default function Dashboard() {
 
   // 🔹 Fetch cycle history
   const fetchHistory = async (uid) => {
-    const q = query(collection(db, "periods"), where("uid", "==", uid));
-    const snapshot = await getDocs(q);
+    try {
+      const q = query(collection(db, "periods"), where("uid", "==", uid));
+      const snapshot = await getDocs(q);
 
-    const records = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+      const records = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-    records.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-    setHistory(records);
+      records.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+      setHistory(records);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      showModal("History Error", "Could not load your cycle history. Please check your permissions. 🛡️", "error");
+    }
   };
 
   const fetchSymptoms = async (uid) => {
-    const q = query(collection(db, "symptoms"), where("uid", "==", uid));
-    const snapshot = await getDocs(q);
-    const records = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setSymptoms(records);
+    try {
+      const q = query(collection(db, "symptoms"), where("uid", "==", uid));
+      const snapshot = await getDocs(q);
+      const records = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setSymptoms(records);
+    } catch (error) {
+      console.error("Error fetching symptoms:", error);
+      // We don't necessarily need to show another modal here if fetchHistory already showed one
+    }
   };
 
   const deletePeriod = async (id) => {

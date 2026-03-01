@@ -27,10 +27,16 @@ export default function Login() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          navigate("/admin");
-        } else {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists() && userDoc.data().role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/dashboard");
+          }
+        } catch (error) {
+          console.error("Error during auth state change redirect:", error);
+          // Fallback to dashboard if Firestore check fails but user is authenticated
           navigate("/dashboard");
         }
       }
@@ -44,10 +50,16 @@ export default function Login() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === "admin") {
-        navigate("/admin");
-      } else {
+      
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
+      } catch (firestoreError) {
+        console.error("Firestore error after Google login:", firestoreError);
         navigate("/dashboard");
       }
     } catch (error) {
@@ -61,10 +73,16 @@ export default function Login() {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === "admin") {
-        navigate("/admin");
-      } else {
+      
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
+      } catch (firestoreError) {
+        console.error("Firestore error after email login:", firestoreError);
         navigate("/dashboard");
       }
     } catch (error) {
